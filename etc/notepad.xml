@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appops>
-	<app>kcxp</app>
+	<app>notepad</app>
 	<actions>
 		<start>
-			<startcmd>C:\\Windows\\notepad.exe</startcmd>
 			<steps>
+				<step action="run" func="启动应用">
+						<binpath>C:\Windows\notepad.exe</binpath>
+						<params></params>
+				</step>
+				
 				<step action="getwin" func="确定主窗口">
 						<title>无标题 - 记事本</title>
 						<clsname></clsname>
@@ -15,8 +19,10 @@
 						<point x="50" y="60"></point>
 						<ref_win_id>main_win</ref_win_id>
 				</step>
+				
 				<step action="lclick" func="点击获取焦点">
 				</step>
+				
 				<step action="settext" func="输入文件内容">
 						<text>hello,world</text>
 				</step>
@@ -25,34 +31,49 @@
 						<point x="33" y="37"></point>
 						<ref_win_id>main_win</ref_win_id>
 				</step>
+				
 				<step action="lclick" func="点击'启动服务'菜单，以弹出'登录'窗口">
 				</step>
 				<step action="moveto" func="将鼠标移到'另存为'菜单">
 						<point x="33" y="108"></point>
 						<ref_win_id>main_win</ref_win_id>
 				</step>
+				
 				<step action="lclick" func="点击'另存为'菜单，以弹出'另存为'窗口">
 				</step>
+				
 				<step action="getwin" func="确定另存为窗口">
 						<title>另存为</title>
 						<clsname></clsname>
 						<id>other_save_win</id>
 				</step>
+				
 				<step action="moveto" func="将鼠标移到'文件名'输入框">
 						<point x="160" y="470"></point>
 						<ref_win_id>other_save_win</ref_win_id>
 				</step>
+				
 				<step action="lclick" func="点击'文件名'输入，以获得焦点">
 				</step>
+				
 				<step action="settext" func="输入文件名">
 						<text>autoops_for_win.txt</text>
 				</step>
+				
 				<step action="btnclick" func="点击保存按钮，保存文件">
 						<title>保存(&amp;S)</title>
 						<ref_win_id>other_save_win</ref_win_id>
 				</step>
 			</steps>
 		</start>
-		<stop></stop>
+		
+		<stop>
+			<steps>
+				<step action="command" func="关闭应用">
+						<cmdline>taskkill /F /IM notepad.exe</cmdline>
+				</step>
+			</steps>
+		</stop>
+		
 	</actions>
 </appops>

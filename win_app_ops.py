@@ -3,11 +3,14 @@ import os
 import sys
 import traceback
 import json
+import time
 from optparse import OptionParser
 
 from lib.helper.xmlparse import APPOpsXml
 from lib.winutil.utils import ProcUtil,WinUtil,MouseUtil,CursorUtil,MsgUtil
 
+reload(sys) 
+sys.setdefaultencoding('utf8')
 
 def get_realpath():
     return os.path.split(os.path.realpath(__file__))[0]
@@ -15,6 +18,19 @@ def get_realpath():
 def get_binname():
     return os.path.split(os.path.realpath(__file__))[1]
 
+def get_right_content(content):
+    try:
+        content = content.decode("utf8")
+    except Exception:
+        try:
+            content = content.decode("gbk")
+        except Exception:
+            try:
+                content = content.decode("GB2312")
+            except Exception:
+                pass
+    return content
+    
 def actions(action_steps):
     try:
         hwds = []
@@ -23,6 +39,7 @@ def actions(action_steps):
             action = action_conf.get("action", "")
             data = action_conf.get("data", {})
             func = action_conf.get("func", "")
+            func = get_right_content(func)
             
             print u"[STEP-%s]" % (idx+1)
             print u"Action: %s" % (action)
@@ -30,6 +47,21 @@ def actions(action_steps):
             print u"Config: %s" % (json.dumps(data, encoding="UTF-8", ensure_ascii=False))
             print 
             
+            ## GUI程序
+            if action == "run":
+                binpath = data.get("binpath", None)
+                params = data.get("params", "")
+                if binpath:
+                    ProcUtil.CreateProc(binpath, paramstr=params)
+                    time.sleep(0.5)
+                    
+            ## 执行命令行命令
+            if action == "command":
+                cmdline = data.get("cmdline", None)
+                if cmdline:
+                    os.system(cmdline)
+                    time.sleep(0.5)
+                
             if action == "getwin":
                 title = data.get("title", None)
                 clsname = data.get("clsname", None)
@@ -109,7 +141,7 @@ def main():
                   help="configure file", metavar="CONFFILE")
         parser.add_option("-a", "--action",  
                   action="store", dest="action", default=None,  
-                  help="action: start, stop", metavar="ACTION")
+                  help="action: such as start/stop which action define in conffile", metavar="ACTION")
         parser.add_option("-d", "--debug", dest="debug", default=False,
                   action="store_true", help="if debug, default is false")
 
@@ -122,26 +154,24 @@ def main():
             parser.print_help()
             sys.exit(1)
 
-        conffile = os.path.abspath(conffile)
+        #conffile = os.path.abspath(conffile)
+        conffile = rp + "\\etc\\" + conffile
         if os.path.exists(conffile) == False:
             parser.print_help()
-            sys.exit(1)
+            sys.exit(0)
+
+        px = APPOpsXml(conffile)
+        actions_def = px.get_actions()
 
         actionstr = str(actionstr).strip().lower()
-        if actionstr not in ["start", "stop"]:
+        if actionstr not in actions_def:
             parser.print_help()
             sys.exit(1)
-            
-        px = APPOpsXml(conffile)
-        action_steps = px.get_action_steps(actionstr)
 
+        action_steps = px.get_action_steps(actionstr)
         if not action_steps:
             print "Can Not Find Action Defined, Exit..."
             sys.exit(1)
-
-        if actionstr == "start":
-            startcmd = px.get_start_cmd()
-            ProcUtil.CreateProc(startcmd)
 
         actions(action_steps)
     except Exception as expt:

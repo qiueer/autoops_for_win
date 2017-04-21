@@ -20,11 +20,20 @@ class APPOpsXml(object):
         root = self._root
         return root.find("app").text
     
-    def get_start_cmd(self):
-        root = self._root
-        return root.find("./actions/start/startcmd").text
-        
-
+    def get_actions(self):
+        try:
+            root = self._root
+            xpath = "./actions"
+            actions = root.findall(xpath)
+            act_list = list()
+            for act in actions:
+                for subnd in act:
+                    act_list.append(str(subnd.tag).strip())
+            return act_list
+        except Exception:
+            print traceback.format_exc()
+            return list()
+            
     def get_action_steps(self, action):
         try:
             root = self._root
