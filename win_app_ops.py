@@ -133,7 +133,6 @@ def actions(action_steps):
 
 def main():
     rp = get_realpath()
-    #filepath = rp + "\etc\kcxp.xml"
     try:
         parser = OptionParser()
         parser.add_option("-c", "--conffile",  
