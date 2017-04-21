@@ -80,5 +80,47 @@ XML配置文件，记录了GUI应用启停等复杂操作过程中涉及到的�
 </step>
  ```
 
+## 工具使用方法
+1）帮助说明
+```
+>python win_app_ops.py -h 
+Usage: win_app_ops.py [options] 
 
-## 
+Options: 
+  -h, --help            show this help message and exit 
+  -c CONFFILE, --conffile=CONFFILE 
+                        configure file 
+  -a ACTION, --action=ACTION 
+                        action: such as start/stop which action define in 
+                        conffile 
+  -d, --debug           if debug, default is false 
+  ``` 
+-c参数，指定要使用的xml配置文件，这个xml文件必须位于工具目录的etc目录下； 
+-a参数，指定的操作，在xml中定义的action 
+
+2）用法示例 
+-> 启动记事本，输入文字，保存 
+```
+python win_app_ops.py -a stop -c notepad.xml
+```
+
+-> 关闭记事本 
+```
+python win_app_ops.py -a start -c notepad.xml
+```
+
+## 辅助工具
+tools目录下提供了几个辅助工具，简单介绍下其功能 
+1）Spy++ 
+```
+微软提供获取窗体标题名及类名的工具 
+```
+2）wintop 
+```
+窗口置顶工具，使用此工具，可以将指定的窗口置顶，在捕获鼠标位置，获取窗口位置时比较好用
+```
+3）实时鼠标位置 
+```
+实时获取鼠标位置，通过两个鼠标坐标位置，可以计算出鼠标相对偏移量
+```
+
