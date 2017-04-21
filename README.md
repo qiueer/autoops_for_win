@@ -10,7 +10,6 @@
 ```
 
 ## 使用步骤
-```
 1）安装python/pywin32  
 -> python 
 从https://www.python.org/downloads/下载即可，本工具使用的版本是：2.7.9  
@@ -26,7 +25,6 @@ XML配置文件，记录了GUI应用启停等复杂操作过程中涉及到的�
 本工具实现的"步骤"及每个"步骤"所需要的数据各不相同（子节点）。  
 每个"步骤"的定义中，action属性必填，func属性可选，action属性告诉本工具具体的操作，func属性告诉步骤的定义者具体做什么。 
 具体来说： 
-
 -> action="run"，运行，通常用来启动GUI应用，例如启动notepad，其中params参数可选  
  ```
 <step action="run" func="启动应用">
@@ -79,8 +77,6 @@ XML配置文件，记录了GUI应用启停等复杂操作过程中涉及到的�
 		<cmdline>taskkill /F /IM notepad.exe</cmdline>
 </step>
  ```
- 
 
-```
 
 ## 
