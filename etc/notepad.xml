@@ -7,12 +7,14 @@
 				<step action="run" func="启动应用">
 						<binpath>C:\Windows\notepad.exe</binpath>
 						<params></params>
+						<id>run_proc_id</id>
 				</step>
 				
 				<step action="getwin" func="确定主窗口">
 						<title>无标题 - 记事本</title>
 						<clsname></clsname>
 						<id>main_win</id>
+						<ref_id>run_proc_id</ref_id>
 				</step>
 				
 				<step action="moveto" func="移动到空白处">
