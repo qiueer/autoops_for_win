@@ -96,14 +96,12 @@ def actions(action_steps):
                     sys.exit(1)
                 whd = WinUtil.GetWinByTitle(clsname=clsname, win_title=title)
                 if not whd:
-                    print "[ERROR] GetWin Can't Find."
-                    sys.exit(1)
-                WinUtil.SetWinCenter(whd)
+                    print "[WARN] GetWin Can't Find."
+                    #sys.exit(1)
+                if whd: WinUtil.SetWinCenter(whd)
                 hwds.append(whd)
                 id_whds[wid] = whd
-                
-                
-                
+
             if action == "moveto":
                 point = data.get("point", {})
                 ref_win_id = data.get("ref_win_id", None)
@@ -113,8 +111,9 @@ def actions(action_steps):
                 else:
                     whd = id_whds.get(ref_win_id, None)
                 if not whd:
-                    print "[ERROR] MoveTo Can't Find Ref Win."
-                    sys.exit(1)
+                    print "[WARN] MoveTo Can't Find Ref Win."
+                    continue
+                    #sys.exit(1)
                 x = int(point.get("x", None))
                 y = int(point.get("y", None))
                 rect = WinUtil.GetCompRect(whd)
@@ -143,8 +142,9 @@ def actions(action_steps):
                 else:
                     whd = id_whds.get(ref_win_id, None)
                 if not whd:
-                    print "[ERROR] BtnClick Can't Find Ref Win."
-                    sys.exit(1)
+                    print "[WARN] BtnClick Can't Find Ref Win."
+                    continue
+                    #sys.exit(1)
                 WinUtil.SetForegroundWindow(whd)
                 btn = WinUtil.GetComponent(whd, win_title=title)
                 (x, y) = WinUtil.GetCompCenterPos(btn)
