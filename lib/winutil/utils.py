@@ -6,8 +6,9 @@ import win32con
 import ctypes
 import time
 import win32process
+import win32com.client
 
-GLB_SLEEP_TIME = 1
+GLB_SLEEP_TIME = 0.2
 
 class Point(ctypes.Structure):  
     _fields_ = [("x", ctypes.c_ulong),("y", ctypes.c_ulong)]  
@@ -27,10 +28,12 @@ class Rect(ctypes.Structure):
     
 class ProcUtil(object):
     @classmethod
-    def CreateProc(cls, exepath, paramstr=""):
+    def CreateProc(cls, exepath, paramstr="", cwd=None):
+        exepath = u"%s" % (exepath)
+        pos = exepath.rfind('\\')
+        cwd = cwd if cwd else exepath[0:pos]
         (proc_hd, thread_hd,  proc_id, thread_id) =  win32process.CreateProcess(exepath, paramstr, None, None, 0, win32process.CREATE_NO_WINDOW,   
-        None, None, win32process.STARTUPINFO())
-        time.sleep(0.5)
+        None, cwd, win32process.STARTUPINFO())
         return (proc_hd, thread_hd,  proc_id, thread_id)
     
     @classmethod
@@ -41,9 +44,17 @@ class ProcUtil(object):
     def TerminateProcByImageName(cls, image_name):
         cmdstr = 'taskkill /F /FI "IMAGENAME eq %s*"' % (image_name)
         os.system(cmdstr)
-        
-        
+
 class WinUtil(object):
+    # Add this to __ini__
+    shell = win32com.client.Dispatch("WScript.Shell")
+
+    @classmethod
+    def SetAsForegroundWindow(cls, hwnd):
+        #发送ALT键，ALT键使用%号表示
+        cls.shell.SendKeys('%')
+        win32gui.SetForegroundWindow(hwnd)
+    
     @classmethod
     def GetWinByTitle(cls, clsname=None, win_title=None, is_foreground=True):
         """
@@ -57,7 +68,7 @@ class WinUtil(object):
         elif win_title:
             whd=win32gui.FindWindow(None, win_title)
         if whd and is_foreground == True:
-            win32gui.SetForegroundWindow(whd)
+            cls.SetAsForegroundWindow(whd)
         return whd
     
     @classmethod
@@ -69,7 +80,7 @@ class WinUtil(object):
         """
         whd=win32gui.FindWindowEx(parent_whd, None, comp_cls_name, win_title)
         if whd and is_foreground == True:
-            win32gui.SetForegroundWindow(whd)
+            cls.SetAsForegroundWindow(whd)
         return whd
     
     @classmethod
@@ -86,7 +97,7 @@ class WinUtil(object):
     
     @classmethod
     def SetForegroundWindow(cls, whd):
-        win32gui.SetForegroundWindow(whd)
+        cls.SetAsForegroundWindow(whd)
     
     @classmethod
     def SetWinCenter(cls, whd):
@@ -94,9 +105,9 @@ class WinUtil(object):
         left = (win32api.GetSystemMetrics(win32con.SM_CXFULLSCREEN)-(rect.right-rect.left))/2;  
         top = (win32api.GetSystemMetrics(win32con.SM_CYFULLSCREEN)-(rect.bottom-rect.top))/2;  
         #Move the window to the correct coordinates with SetWindowPos()  
+        cls.SetAsForegroundWindow(whd)
         win32gui.SetWindowPos(whd, win32con.HWND_TOPMOST, left, top,-1,-1, win32con.SWP_NOSIZE | win32con.SWP_NOZORDER);  
         win32gui.SetWindowPos(whd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOSIZE | win32con.SWP_NOMOVE);  
-        win32gui.SetForegroundWindow(whd)
         
     @classmethod
     def EnumChildWindows(cls, parent_whd):
@@ -105,7 +116,25 @@ class WinUtil(object):
         whd_child_list = []  
         win32gui.EnumChildWindows(parent_whd, lambda hWnd, param: param.append(hWnd),  whd_child_list)  
         return whd_child_list
-   
+    
+    @classmethod
+    def GetHWndByProcId(cls, procid):
+        def callback(hwnd, procinfo):
+            pid = procinfo.get("procid", None)
+            t, pid_2 = win32process.GetWindowThreadProcessId(hwnd)
+            #print pid,"==", find_pid
+            if pid == pid_2:
+                p_hwnd = win32gui.GetParent(hwnd)
+                if  p_hwnd == 0: # top window
+                    procinfo["hwnd"] = hwnd
+                    return True
+        procinfo = {
+            "procid": procid,
+            "hwnd": None,
+        }
+        win32gui.EnumWindows(callback, procinfo)
+        return procinfo["hwnd"]
+
     @classmethod
     def GetClassName(cls, whd):
         return win32gui.GetClassName(whd)
