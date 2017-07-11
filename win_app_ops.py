@@ -63,10 +63,9 @@ def actions(action_steps):
                         break
                 if avail_bp:
                     (proc_hd, thread_hd,  proc_id, thread_id) = ProcUtil.CreateProc(avail_bp, paramstr=params)
+                    #必须sleep 1
                     time.sleep(1)
                     whd = WinUtil.GetHWndByProcId(proc_id)
-                    print (proc_hd, thread_hd,  proc_id, thread_id) 
-                    print whd
                     hwds.append(whd)
                     id_whds[wid] = whd
                     
