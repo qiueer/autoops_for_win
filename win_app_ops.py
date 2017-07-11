@@ -4,6 +4,7 @@ import sys
 import traceback
 import json
 import time
+import re
 from optparse import OptionParser
 
 from lib.helper.xmlparse import APPOpsXml
@@ -45,15 +46,30 @@ def actions(action_steps):
             print u"Action: %s" % (action)
             print u"Func: %s" % (func)
             print u"Config: %s" % (json.dumps(data, encoding="UTF-8", ensure_ascii=False))
-            print 
             
             ## GUI程序
             if action == "run":
-                binpath = data.get("binpath", None)
+                binpath = data.get("binpath", "")
                 params = data.get("params", "")
-                if binpath:
-                    ProcUtil.CreateProc(binpath, paramstr=params)
-                    time.sleep(0.5)
+                wid = data.get("id", None)
+                if not wid:
+                    print "[Warn] Do Not Assign ID."
+                params = params if params else ""
+                bps = re.split(";", binpath)
+                avail_bp = None
+                for bp in bps:
+                    if bp and os.path.exists(bp):
+                        avail_bp = bp
+                        break
+                if avail_bp:
+                    (proc_hd, thread_hd,  proc_id, thread_id) = ProcUtil.CreateProc(avail_bp, paramstr=params)
+                    time.sleep(1)
+                    whd = WinUtil.GetHWndByProcId(proc_id)
+                    print (proc_hd, thread_hd,  proc_id, thread_id) 
+                    print whd
+                    hwds.append(whd)
+                    id_whds[wid] = whd
+                    
                     
             ## 执行命令行命令
             if action == "command":
@@ -66,6 +82,12 @@ def actions(action_steps):
                 title = data.get("title", None)
                 clsname = data.get("clsname", None)
                 wid = data.get("id", None)
+                ref_id = data.get("ref_id", None)
+                if ref_id:  ## 高优先级
+                    hwds.append(id_whds[ref_id])
+                    id_whds[wid] = id_whds[ref_id]
+                    continue
+
                 if not wid:
                     print "[ERROR] GetWin Must Contain ID."
                     sys.exit(1)
@@ -79,6 +101,8 @@ def actions(action_steps):
                 WinUtil.SetWinCenter(whd)
                 hwds.append(whd)
                 id_whds[wid] = whd
+                
+                
                 
             if action == "moveto":
                 point = data.get("point", {})
@@ -126,6 +150,7 @@ def actions(action_steps):
                 (x, y) = WinUtil.GetCompCenterPos(btn)
                 CursorUtil.SetCursorPos(x, y)
                 MouseUtil.LClick()
+            print
                 
     except Exception:
             print traceback.format_exc()
@@ -178,4 +203,3 @@ def main():
         
 if __name__ == "__main__":
     main()
-
